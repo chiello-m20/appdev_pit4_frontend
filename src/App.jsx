@@ -20,8 +20,14 @@ function App() {
 
   const fetchTasks = async () => {
     try {
-      const res = await fetch(API_URL);
+      const res = await fetch(`${API_URL}/tasks/`);
       const data = await res.json();
+
+      if (!Array.isArray(data)) {
+        console.error("Expected an array but got:", data);
+        return;
+      }
+
       setTasks(data);
     } catch (err) {
       console.error('Failed to fetch tasks:', err);
@@ -34,15 +40,15 @@ function App() {
 
     if (editingTaskId) {
       // Update task
-      await fetch(`${API_URL}${editingTaskId}`, {
+      await fetch(`${API_URL}/tasks/${editingTaskId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: taskTitle })
+        body: JSON.stringify({ title: taskTitle, completed: false }) // Assuming default false when updating title
       });
       setEditingTaskId(null);
     } else {
       // Add new task
-      await fetch(API_URL, {
+      await fetch(`${API_URL}/tasks/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: taskTitle })
@@ -54,12 +60,12 @@ function App() {
   };
 
   const handleDeleteTask = async (id) => {
-    await fetch(`${API_URL}${id}`, { method: 'DELETE' });
+    await fetch(`${API_URL}/tasks/${id}`, { method: 'DELETE' });
     fetchTasks();
   };
 
   const handleToggleTask = async (task) => {
-    await fetch(`${API_URL}${task.id}`, {
+    await fetch(`${API_URL}/tasks/${task.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...task, completed: !task.completed })
